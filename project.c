@@ -5,6 +5,50 @@
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
+    if (ALUControl == 1) { // Add
+        *ALUresult = A+B;
+    }
+
+    if (ALUControl == 2) { // Subtract
+        *ALUresult = A-B;
+    }
+
+    if (ALUControl == 3) { // A<B
+        
+    }
+
+    if (ALUControl == 4) { // A<B (unsigned integers)
+        if (A<B) {
+            *ALUresult = 1;
+        }
+        else {
+            *ALUresult = 0;
+        }
+    }
+
+    if (ALUControl == 5) { // AND
+        *ALUresult = A&B;
+    }
+
+    if (ALUControl == 6) { // OR
+        *ALUresult = A|B;
+    }
+
+    if (ALUControl == 7) { // Shift B left by 16 bits
+        *ALUresult = B<<16;
+    }
+
+    if (ALUControl == 8) { // NOT A
+        *ALUresult = ~A;
+    }
+
+    if (*ALUresult == 0) {
+        *Zero = 1;
+    }
+    else {
+        *Zero = 0;
+    }
+
 
 }
 
