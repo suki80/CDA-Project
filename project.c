@@ -5,8 +5,11 @@
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
+    *Zero = 0;
+
     if (ALUControl == 1) { // Add
         *ALUresult = A+B;
+        
     }
 
     if (ALUControl == 2) { // Subtract
@@ -14,7 +17,12 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
     }
 
     if (ALUControl == 3) { // A<B
-        
+        if ((int)A<(int)B) {
+            *ALUresult = 1;
+        }
+        else {
+            *ALUresult = 0;
+        }
     }
 
     if (ALUControl == 4) { // A<B (unsigned integers)
@@ -45,10 +53,6 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
     if (*ALUresult == 0) {
         *Zero = 1;
     }
-    else {
-        *Zero = 0;
-    }
-
 
 }
 
@@ -56,6 +60,33 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 /* 10 Points */
 int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 {
+    //checking for multiple of 4
+    if (PC % 4 != 0) {
+        return 1; 
+    }
+
+    // checking for beyond memory bounds (0x0000 to 0xFFFF)
+    if (PC > 0xFFFF) {
+        return 1; 
+    }
+
+    //calculating the word address ( / 4)
+    unsigned word_addr = PC >> 2;
+
+    //checking if word address is within bounds
+    if (word_addr >= (65536 >> 2)) {
+        return 1; 
+    }
+
+    //fetching instruction from memory
+    instruction = Mem[word_addr];
+
+    //checking illegal instruction
+    if (instruction == 0x00000000) {
+        return 1; 
+    }
+
+    return 0; 
 
 }
 
