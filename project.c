@@ -7,51 +7,43 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
     *Zero = 0;
 
-    if (ALUControl == 1) { // Add
-        *ALUresult = A+B;
-        
-    }
+    switch(ALUControl) { 
+        case 1: // Add
+        *ALUresult = A+B; 
 
-    if (ALUControl == 2) { // Subtract
-        *ALUresult = A-B;
-    }
+        case 2: // Subtract
+        *ALUresult = A-B; 
 
-    if (ALUControl == 3) { // A<B
+        case 3: // A<B
         if ((int)A<(int)B) {
             *ALUresult = 1;
         }
         else {
             *ALUresult = 0;
         }
-    }
 
-    if (ALUControl == 4) { // A<B (unsigned integers)
+        case 4: // A<B (unsigned integers)
         if (A<B) {
             *ALUresult = 1;
         }
         else {
             *ALUresult = 0;
-        }
-    }
+        } 
 
-    if (ALUControl == 5) { // AND
-        *ALUresult = A&B;
-    }
+        case 5: // AND
+        *ALUresult = A&B; 
 
-    if (ALUControl == 6) { // OR
-        *ALUresult = A|B;
-    }
+        case 6: // OR
+        *ALUresult = A|B; 
 
-    if (ALUControl == 7) { // Shift B left by 16 bits
+        case 7: // Shift B left by 16 bits
         *ALUresult = B<<16;
-    }
 
-    if (ALUControl == 8) { // NOT A
-        *ALUresult = ~A;
-    }
-
-    if (*ALUresult == 0) {
-        *Zero = 1;
+        case 8: // NOT A
+        *ALUresult = ~A; 
+        
+        case 0: // Assign Zero to 1 if the result is zero
+        *Zero = 1; 
     }
 
 }
@@ -95,6 +87,13 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 /* 10 Points */
 void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsigned *r2, unsigned *r3, unsigned *funct, unsigned *offset, unsigned *jsec)
 {
+    *op = (instruction >> 26) & 0x3F; // shift right 26 ms bits and mask 6 ls bits
+    *r1 = (instruction >> 21) & 0x1F; // shift right 21 ms bits and mask 5 ls bits
+    *r2 = (instruction >> 16) & 0x1F; // shift right 16 ms bits and mask 5 ls bits
+    *r3 = (instruction >> 11) & 0x1F; // shift right 16 ms bits and mask 5 ls bits
+    *funct = instruction & 0x3F; // mask 6 ls bits
+    *offset = instruction & 0xFFFF; // mask 16 ls bits
+    *jsec = (instruction >> 6) & 0x3FFFFFF; // shift right 6 ms bits and mask 26 ls bits
 
 }
 
