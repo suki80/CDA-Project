@@ -5,46 +5,47 @@
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
-    *Zero = 0;
-
-    switch(ALUControl) { 
-        case 1: // Add
+        
+    if (ALUControl == '1') { // Add
         *ALUresult = A+B; 
-
-        case 2: // Subtract
+    }
+    if (ALUControl == '2') { // Subtract
         *ALUresult = A-B; 
-
-        case 3: // A<B
+    }
+    if (ALUControl == '3') { // Set less than
         if ((int)A<(int)B) {
             *ALUresult = 1;
         }
         else {
             *ALUresult = 0;
-        }
-
-        case 4: // A<B (unsigned integers)
+        } 
+    }
+    if (ALUControl == '4') { // Set less than (unsigned integers)
         if (A<B) {
             *ALUresult = 1;
         }
         else {
             *ALUresult = 0;
         } 
-
-        case 5: // AND
+    }
+    if (ALUControl == '5') { // AND
         *ALUresult = A&B; 
-
-        case 6: // OR
+    }
+    if (ALUControl == '6') { // OR
         *ALUresult = A|B; 
-
-        case 7: // Shift B left by 16 bits
+    }
+    if (ALUControl == '7') { // Shift B left by 16 bits
         *ALUresult = B<<16;
-
-        case 8: // NOT A
+    }
+    if (ALUControl == '8') { // NOT A
         *ALUresult = ~A; 
-        
-        case 0: // Assign Zero to 1 if the result is zero
+    }
+
+    // Assign Zero to 1 if the result is zero
+    if (ALUresult == 0) { 
         *Zero = 1; 
     }
+    *Zero = 0;
 
 }
 
@@ -110,7 +111,8 @@ int instruction_decode(unsigned op,struct_controls *controls)
 /* 5 Points */
 void read_register(unsigned r1,unsigned r2,unsigned *Reg,unsigned *data1,unsigned *data2)
 {
-
+    *data1 = Reg[r1];
+    *data2 = Reg[r2];
 }
 
 
@@ -125,7 +127,70 @@ void sign_extend(unsigned offset,unsigned *extended_value)
 /* 10 Points */
 int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
 {
+   
+    char ALUControl;
 
+    // Determine ALU operation based on ALUOp and funct
+    if (ALUOp == 0) {
+        if (funct == 0x20) {
+            ALUControl = '1'; // Add
+        }
+        else if (funct == 0x22) {
+            ALUControl = '2'; // Subtract
+        }
+        else if (funct == 0x2A) {
+            ALUControl = '3'; // SLT
+        }
+        else if (funct == 0x2B) {
+            ALUControl = '4'; // SLT(unsigned)
+        }
+        else if (funct == 0x24) {
+            ALUControl = '5'; // AND
+        }
+        else if (funct == 0x25) {
+            ALUControl = '6'; // OR
+        }
+        else if (funct == 0x00) {
+            ALUControl = '7'; // SLL
+        }
+        else if (funct == 0x28) {
+            ALUControl = '8'; // NOR(NOT)
+        }
+        else {
+            return 1; // Halt
+        }
+          
+    }
+    else if (ALUOp == 1) {
+        ALUControl = '1'; // Add
+
+    }
+    else if (ALUOp == 2) {
+        ALUControl = '2'; // Subtract
+
+    }
+    else if (ALUOp == 3) {
+        ALUControl = '5'; // AND
+
+    }
+    else {
+        return 1; // Halt
+    }
+
+    // use data2
+    if (ALUSrc == '0') {
+        ALU(data1, data2, ALUControl, ALUresult, Zero);
+    }
+    // use extended_value
+    else if (ALUSrc == '1') {
+        ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+    }
+    else {
+        return 1; // Halt
+    }
+
+    return 0;
+  
 }
 
 /* Read / Write Memory */
