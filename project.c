@@ -200,11 +200,37 @@ int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsig
 
 }
 
-
 /* Write Register */
 /* 10 Points */
 void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,char RegWrite,char RegDst,char MemtoReg,unsigned *Reg)
 {
+    unsigned dest;
+    
+    if (RegWrite != '1') {
+        // no write
+        return;
+    }
+    else {  
+        // write
+        if (RegDst == '0') {
+            // write comes from rt field bits[20-16]
+            dest = r2;
+   
+        }
+        else if (RegDst == '1') {
+           // write comes from rd field bits[15-11]
+           dest = r3;
+        }
+   
+        if (MemtoReg == '0') {
+           // value comes from ALU
+           Reg[dest] = ALUresult;
+        }
+       else if (MemtoReg == '1') {
+           // value comes from data memory
+           Reg[dest] = memdata;
+        }
+    }
 
 }
 
