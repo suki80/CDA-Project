@@ -1,18 +1,18 @@
 #include "spimcore.h"
+#include <stdio.h>
 
 
 /* ALU */
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
-        
-    if (ALUControl == '1') { // Add
+    if (ALUControl == 1) { // Add
         *ALUresult = A+B; 
     }
-    if (ALUControl == '2') { // Subtract
+    if (ALUControl == 2) { // Subtract
         *ALUresult = A-B; 
     }
-    if (ALUControl == '3') { // Set less than
+    if (ALUControl == 3) { // Set less than
         if ((int)A<(int)B) {
             *ALUresult = 1;
         }
@@ -20,7 +20,7 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             *ALUresult = 0;
         } 
     }
-    if (ALUControl == '4') { // Set less than (unsigned integers)
+    if (ALUControl == 4) { // Set less than (unsigned integers)
         if (A<B) {
             *ALUresult = 1;
         }
@@ -28,16 +28,16 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             *ALUresult = 0;
         } 
     }
-    if (ALUControl == '5') { // AND
+    if (ALUControl == 5) { // AND
         *ALUresult = A&B; 
     }
-    if (ALUControl == '6') { // OR
+    if (ALUControl == 6) { // OR
         *ALUresult = A|B; 
     }
-    if (ALUControl == '7') { // Shift B left by 16 bits
+    if (ALUControl == 7) { // Shift B left by 16 bits
         *ALUresult = B<<16;
     }
-    if (ALUControl == '8') { // NOT A
+    if (ALUControl == 8) { // NOT A
         *ALUresult = ~A; 
     }
 
@@ -46,14 +46,13 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
         *Zero = 1; 
     }
     *Zero = 0;
-
 }
 
 /* instruction fetch */
 /* 10 Points */
 int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 {
-    //checking for multiple of 4
+	//checking for multiple of 4
     if (PC % 4 != 0) {
         return 1; 
     }
@@ -72,10 +71,10 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
     }
 
     //fetching instruction from memory
-    instruction = Mem[word_addr];
+    *instruction = Mem[word_addr];
 
     //checking illegal instruction
-    if (instruction == 0x00000000) {
+    if (*instruction == 0x00000000) {
         return 1; 
     }
 
@@ -88,21 +87,20 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 /* 10 Points */
 void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsigned *r2, unsigned *r3, unsigned *funct, unsigned *offset, unsigned *jsec)
 {
-    *op = (instruction >> 26) & 0x3F; // shift right 26 ms bits and mask 6 ls bits
-    *r1 = (instruction >> 21) & 0x1F; // shift right 21 ms bits and mask 5 ls bits
-    *r2 = (instruction >> 16) & 0x1F; // shift right 16 ms bits and mask 5 ls bits
-    *r3 = (instruction >> 11) & 0x1F; // shift right 16 ms bits and mask 5 ls bits
-    *funct = instruction & 0x3F; // mask 6 ls bits
-    *offset = instruction & 0xFFFF; // mask 16 ls bits
-    *jsec = (instruction >> 6) & 0x3FFFFFF; // shift right 6 ms bits and mask 26 ls bits
-
+    *op = (instruction >> 26) & 0x3F; // instruction [31-26]
+    *r1 = (instruction >> 21) & 0x1F; // instruction [25-21]
+    *r2 = (instruction >> 16) & 0x1F; // instruction [20-16]
+    *r3 = (instruction >> 11) & 0x1F; // instruction [15-11]
+    *funct = instruction & 0x3F; // instruction [5-0]
+    *offset = instruction & 0xFFFF; // instruction [15-0]
+    *jsec = instruction & 0x3FFFFFF; // instruction [25-0]
 }
 
 
 
 /* instruction decode */
 /* 15 Points */
-int instruction_decode(unsigned op, struct_controls *controls)
+int instruction_decode(unsigned op,struct_controls *controls)
 {
     switch (op)
     {
@@ -193,7 +191,6 @@ int instruction_decode(unsigned op, struct_controls *controls)
     return 0;
 }
 
-
 /* Read Register */
 /* 5 Points */
 void read_register(unsigned r1,unsigned r2,unsigned *Reg,unsigned *data1,unsigned *data2)
@@ -205,7 +202,7 @@ void read_register(unsigned r1,unsigned r2,unsigned *Reg,unsigned *data1,unsigne
 
 /* Sign Extend */
 /* 10 Points */
-void sign_extend(unsigned offset, unsigned *extended_value)
+void sign_extend(unsigned offset,unsigned *extended_value)
 {
     if (offset & 0x8000)
     {
@@ -217,98 +214,75 @@ void sign_extend(unsigned offset, unsigned *extended_value)
     }
 }
 
-
 /* ALU operations */
 /* 10 Points */
 int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
 {
-   
-    char ALUControl;
 
     // Determine ALU operation based on ALUOp and funct
-    if (ALUOp == 0) {
-        if (funct == 0x20) {
-            ALUControl = '1'; // Add
+    if (ALUOp == 7) {
+        if (funct == 32) {
+            ALUOp = 0; // Add
         }
-        else if (funct == 0x22) {
-            ALUControl = '2'; // Subtract
+        else if (funct == 34) {
+            ALUOp = 1; // Subtract
         }
-        else if (funct == 0x2A) {
-            ALUControl = '3'; // SLT
+        else if (funct == 42) {
+            ALUOp = 2; // SLT(signed)
         }
-        else if (funct == 0x2B) {
-            ALUControl = '4'; // SLT(unsigned)
+        else if (funct == 43) {
+            ALUOp= 3; // SLT(unsigned)
         }
-        else if (funct == 0x24) {
-            ALUControl = '5'; // AND
+        else if (funct == 36) {
+            ALUOp = 4; // AND
         }
-        else if (funct == 0x25) {
-            ALUControl = '6'; // OR
+        else if (funct == 37) {
+            ALUOp = 5; // OR
         }
-        else if (funct == 0x00) {
-            ALUControl = '7'; // SLL
+        else if (funct == 4) {
+            ALUOp = 6; // SLL
         }
-        else if (funct == 0x28) {
-            ALUControl = '8'; // NOR(NOT)
+        else if (funct == 39) {
+            ALUOp = 7; // NOR 
         }
         else {
             return 1; // Halt
         }
-          
-    }
-    else if (ALUOp == 1) {
-        ALUControl = '1'; // Add
 
-    }
-    else if (ALUOp == 2) {
-        ALUControl = '2'; // Subtract
-
-    }
-    else if (ALUOp == 3) {
-        ALUControl = '5'; // AND
+        // use data2
+       ALU(data1, data2, ALUOp, ALUresult, Zero);
 
     }
     else {
-        return 1; // Halt
-    }
-
-    // use data2
-    if (ALUSrc == '0') {
-        ALU(data1, data2, ALUControl, ALUresult, Zero);
-    }
-    // use extended_value
-    else if (ALUSrc == '1') {
-        ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-    }
-    else {
-        return 1; // Halt
+        // use extended_value
+        ALU(data1, extended_value, ALUOp, ALUresult, Zero);
     }
 
     return 0;
-  
+
 }
 
 /* Read / Write Memory */
 /* 10 Points */
-int rw_memory(unsigned ALUresult, unsigned data2, char MemWrite, char MemRead, unsigned *memdata, unsigned *Mem)
-{
-    if (MemRead)
-    {
-        if (ALUresult % 4 != 0)
+int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
+{       
+    if (MemRead == 1) {
+        if (ALUresult % 4 != 0) {
             return 1; // Address not aligned
+        }
 
         *memdata = Mem[ALUresult >> 2];
     }
 
-    if (MemWrite)
-    {
-        if (ALUresult % 4 != 0)
+    if (MemWrite == 1) {
+        if (ALUresult % 4 != 0) {
             return 1; // Address not aligned
-
+        }
         Mem[ALUresult >> 2] = data2;
     }
 
     return 0;
+
 }
 
 
@@ -343,12 +317,11 @@ void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,
            Reg[dest] = memdata;
         }
     }
-
 }
 
 /* PC update */
 /* 10 Points */
-void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, char Zero, unsigned *PC)
+void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char Zero,unsigned *PC)
 {
     *PC += 4; // Default: move to next instruction
 
