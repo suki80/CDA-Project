@@ -102,10 +102,97 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsi
 
 /* instruction decode */
 /* 15 Points */
-int instruction_decode(unsigned op,struct_controls *controls)
+int instruction_decode(unsigned op, struct_controls *controls)
 {
+    switch (op)
+    {
+        case 0x00: // R-type
+            controls->RegDst = 1;
+            controls->ALUSrc = 0;
+            controls->MemtoReg = 0;
+            controls->RegWrite = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 7; 
+            break;
+        case 0x23: // lw
+            controls->RegDst = 0;
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 1;
+            controls->RegWrite = 1;
+            controls->MemRead = 1;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 0; // ADD
+            break;
+        case 0x2B: // sw
+            controls->RegDst = 0; 
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 0; 
+            controls->RegWrite = 0;
+            controls->MemRead = 0;
+            controls->MemWrite = 1;
+            controls->Branch = 0;
+            controls->ALUOp = 0; // ADD
+            break;
+        case 0x04: // beq
+            controls->RegDst = 0; 
+            controls->ALUSrc = 0;
+            controls->MemtoReg = 0; 
+            controls->RegWrite = 0;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 1;
+            controls->ALUOp = 1; // SUB
+            break;
+        case 0x08: // addi
+            controls->RegDst = 0;
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 0;
+            controls->RegWrite = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 0; // ADD
+            break;
+        case 0x0A: // slti
+            controls->RegDst = 0;
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 0;
+            controls->RegWrite = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 2; // SLT
+            break;
+        case 0x0C: // andi
+            controls->RegDst = 0;
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 0;
+            controls->RegWrite = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 4; // AND
+            break;
+        case 0x0D: // ori
+            controls->RegDst = 0;
+            controls->ALUSrc = 1;
+            controls->MemtoReg = 0;
+            controls->RegWrite = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 5; // OR
+            break;
+        default:
+            return 1; 
+    }
 
+    return 0;
 }
+
 
 /* Read Register */
 /* 5 Points */
@@ -118,10 +205,18 @@ void read_register(unsigned r1,unsigned r2,unsigned *Reg,unsigned *data1,unsigne
 
 /* Sign Extend */
 /* 10 Points */
-void sign_extend(unsigned offset,unsigned *extended_value)
+void sign_extend(unsigned offset, unsigned *extended_value)
 {
-
+    if (offset & 0x8000)
+    {
+        *extended_value = offset | 0xFFFF0000;
+    }
+    else
+    {
+        *extended_value = offset & 0x0000FFFF;
+    }
 }
+
 
 /* ALU operations */
 /* 10 Points */
@@ -195,10 +290,27 @@ int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigne
 
 /* Read / Write Memory */
 /* 10 Points */
-int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
+int rw_memory(unsigned ALUresult, unsigned data2, char MemWrite, char MemRead, unsigned *memdata, unsigned *Mem)
 {
+    if (MemRead)
+    {
+        if (ALUresult % 4 != 0)
+            return 1; // Address not aligned
 
+        *memdata = Mem[ALUresult >> 2];
+    }
+
+    if (MemWrite)
+    {
+        if (ALUresult % 4 != 0)
+            return 1; // Address not aligned
+
+        Mem[ALUresult >> 2] = data2;
+    }
+
+    return 0;
 }
+
 
 /* Write Register */
 /* 10 Points */
@@ -236,8 +348,21 @@ void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,
 
 /* PC update */
 /* 10 Points */
-void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char Zero,unsigned *PC)
+void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, char Zero, unsigned *PC)
 {
+    *PC += 4; // Default: move to next instruction
 
+    if (Branch && Zero)
+    {
+        // Branch target is PC + 4 + (sign-extended offset << 2)
+        *PC += (extended_value << 2);
+    }
+
+    if (Jump)
+    {
+        // Jump target is {PC[31:28], jsec, 00}
+        *PC = (*PC & 0xF0000000) | (jsec << 2);
+    }
 }
+
 
