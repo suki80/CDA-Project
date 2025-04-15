@@ -28,21 +28,9 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             *ALUresult = 0;
         } 
     }
-    if (ALUControl == 5) { // AND
-        *ALUresult = A&B; 
-    }
-    if (ALUControl == 6) { // OR
-        *ALUresult = A|B; 
-    }
-    if (ALUControl == 7) { // Shift B left by 16 bits
-        *ALUresult = B<<16;
-    }
-    if (ALUControl == 8) { // NOT A
-        *ALUresult = ~A; 
-    }
 
     // Assign Zero to 1 if the result is zero
-    if (ALUresult == 0) { 
+    if (*ALUresult == 0) { 
         *Zero = 1; 
     }
     *Zero = 0;
@@ -290,31 +278,21 @@ int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsig
 /* 10 Points */
 void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,char RegWrite,char RegDst,char MemtoReg,unsigned *Reg)
 {
-    unsigned dest;
-    
-    if (RegWrite != '1') {
-        // no write
-        return;
-    }
-    else {  
-        // write
-        if (RegDst == '0') {
-            // write comes from rt field bits[20-16]
-            dest = r2;
-   
+    if(RegWrite == 1) {
+        // mem to reg
+        if(MemtoReg == 1 && RegDst == 0) {
+            Reg[r2] = memdata;
         }
-        else if (RegDst == '1') {
-           // write comes from rd field bits[15-11]
-           dest = r3;
+        else if(MemtoReg == 1 && RegDst == 1) {
+            Reg[r3] = memdata;
         }
-   
-        if (MemtoReg == '0') {
-           // value comes from ALU
-           Reg[dest] = ALUresult;
+        // store ALUResult in r2
+        else if(MemtoReg == 0 && RegDst == 0) {
+            Reg[r2] = ALUresult;
         }
-       else if (MemtoReg == '1') {
-           // value comes from data memory
-           Reg[dest] = memdata;
+        // store ALUResult in r3
+        else if(MemtoReg == 0 && RegDst == 1) {
+            Reg[r3] = ALUresult;
         }
     }
 }
@@ -330,7 +308,6 @@ void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char 
         // Branch target is PC + 4 + (sign-extended offset << 2)
         *PC += (extended_value << 2);
     }
-<<<<<<< HEAD
 
     if (Jump)
     {
@@ -338,14 +315,3 @@ void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char 
         *PC = (*PC & 0xF0000000) | (jsec << 2);
     }
 }
-
-
-=======
-
-    if (Jump)
-    {
-        // Jump target is {PC[31:28], jsec, 00}
-        *PC = (*PC & 0xF0000000) | (jsec << 2);
-    }
-}
->>>>>>> c608549 (updated)
