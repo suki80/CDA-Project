@@ -357,6 +357,7 @@ void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, c
         // Branch target is PC + 4 + (sign-extended offset << 2)
         *PC += (extended_value << 2);
     }
+<<<<<<< HEAD
 
     if (Jump)
     {
@@ -366,3 +367,12 @@ void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, c
 }
 
 
+=======
+
+    if (Jump)
+    {
+        // Jump target is {PC[31:28], jsec, 00}
+        *PC = (*PC & 0xF0000000) | (jsec << 2);
+    }
+}
+>>>>>>> c608549 (updated)
