@@ -28,6 +28,18 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             *ALUresult = 0;
         } 
     }
+    if (ALUControl == 5) { // AND
+        *ALUresult = A&B; 
+    }
+    if (ALUControl == 6) { // OR
+        *ALUresult = A|B; 
+    }
+    if (ALUControl == 7) { // Shift B left by 16 bits
+        *ALUresult = B<<16;
+    }
+    if (ALUControl == 8) { // NOT A
+        *ALUresult = ~A; 
+    }
 
     // Assign Zero to 1 if the result is zero
     if (*ALUresult == 0) { 
@@ -61,9 +73,8 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
     //fetching instruction from memory
     *instruction = Mem[word_addr];
 
-    //checking illegal instruction
     if (*instruction == 0x00000000) {
-        return 1; 
+        return 1;
     }
 
     return 0; 
