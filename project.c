@@ -99,7 +99,6 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Branch = 0;
             controls->ALUOp = 7;
             break;
-        //End R Type Instructions
         
         //I Type Instructions
         //addi
@@ -114,8 +113,59 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Branch = 0;
             controls->ALUOp = 0;
             break;
+        //sw
+         case 43:
+            controls->RegDst = 2;  
+            controls->RegWrite = 0;
+            controls->ALUSrc = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 1;
+            controls->MemtoReg = 2;
+            controls->Jump = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 0;
+            break; 
+
+        //lw
+        case 35:
+            controls->RegDst = 0;
+            controls->RegWrite = 1;
+            controls->ALUSrc = 1;
+            controls->MemRead = 1;
+            controls->MemWrite = 0;
+            controls->MemtoReg = 1;
+            controls->Jump = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 0;
+            break;
+
+        //lui
+        case 15:
+            controls->RegDst = 0;
+            controls->RegWrite = 1;
+            controls->ALUSrc = 1;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->MemtoReg = 0;
+            controls->Jump = 0;
+            controls->Branch = 0;
+            controls->ALUOp = 6;
+            break; 
+            
+        //beq
+        case 4:
+            controls->RegDst = 2;
+            controls->RegWrite = 0;
+            controls->ALUSrc = 0;
+            controls->MemRead = 0;
+            controls->MemWrite = 0;
+            controls->MemtoReg = 2;
+            controls->Jump = 0;
+            controls->Branch = 1;
+            controls->ALUOp = 1;
+            break;
         
-        //slt
+        //slt/slti
         case 10:
             controls->RegDst = 1;
             controls->RegWrite = 1;
@@ -139,62 +189,8 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Jump = 0;
             controls->Branch = 0;
             controls->ALUOp = 3;
-            break;
-            
-        //beq
-        case 4:
-            controls->RegDst = 2;
-            controls->RegWrite = 0;
-            controls->ALUSrc = 0;
-            controls->MemRead = 0;
-            controls->MemWrite = 0;
-            controls->MemtoReg = 2;
-            controls->Jump = 0;
-            controls->Branch = 1;
-            controls->ALUOp = 1;
-            break;
-            
-        //lw
-        case 35:
-            controls->RegDst = 0;
-            controls->RegWrite = 1;
-            controls->ALUSrc = 1;
-            controls->MemRead = 1;
-            controls->MemWrite = 0;
-            controls->MemtoReg = 1;
-            controls->Jump = 0;
-            controls->Branch = 0;
-            controls->ALUOp = 0;
-            break;
-            
-        //lui
-        case 15:
-            controls->RegDst = 0;
-            controls->RegWrite = 1;
-            controls->ALUSrc = 1;
-            controls->MemRead = 0;
-            controls->MemWrite = 0;
-            controls->MemtoReg = 0;
-            controls->Jump = 0;
-            controls->Branch = 0;
-            controls->ALUOp = 6;
-            break;
-            
-        //sw
-        case 43:
-            controls->RegDst = 2; // 2 for don't care
-            controls->RegWrite = 0;
-            controls->ALUSrc = 1;
-            controls->MemRead = 0;
-            controls->MemWrite = 1;
-            controls->MemtoReg = 2;
-            controls->Jump = 0;
-            controls->Branch = 0;
-            controls->ALUOp = 0;
-            break;
-        //End I Type Instructions
+            break; 
         
-        //J Type Instructions
         //Jump
         case 2:
             controls->RegDst = 0;
@@ -206,9 +202,8 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Jump = 1;
             controls->Branch = 0;
             controls->ALUOp = 0;
-            break; 
-        //End J Type Instructions
-        
+            break;    
+
         default:
             return 1;
     }
